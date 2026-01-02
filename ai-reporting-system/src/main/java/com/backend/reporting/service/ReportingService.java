@@ -26,4 +26,6 @@ public class ReportingService {
     public List<ReportResponse> paymentCountByMode() {
         return reportRepository.paymentCountByMode();
     }
+
+    public List<ReportResponse> revenueByRegionLast30Days() {return reportRepository.revenueByRegion();}
 }

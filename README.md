@@ -1,6 +1,5 @@
 ---
-
-# AI Secure Reporting System
+AI Secure Reporting System
 
 **Enterprise-grade AI-powered Reporting Platform with Secure Access, CI/CD, and Cloud-Native Architecture**
 

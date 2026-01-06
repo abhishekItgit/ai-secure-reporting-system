@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-ai
+    restart: always
+    environment:
+      MYSQL_DATABASE: ai_reporting
+      MYSQL_USER:${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build:
+      context: ./ai-reporting-system
+      dockerfile: Dockerfile
+    container_name: ai-reporting-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME:${DB_USERNAME}
+      DB_PASSWORD:${DB_PASSWORD}
+      OPENAI_API_KEY: ${OPENAI_KEY}
+
+volumes:
+  mysql_data:

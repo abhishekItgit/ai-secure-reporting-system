@@ -51,7 +51,7 @@ CI/CD Pipeline (Jenkins)
 
 ---
 
-## 🧩 Tech Stack (Interview-Ready)
+## 🧩 Tech Stack 
 
 ### 🔹 Backend
 

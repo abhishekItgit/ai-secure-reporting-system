@@ -29,8 +29,12 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 sh '''
-                    docker-compose down || true
-                    docker-compose up -d --build
+                    export DB_USERNAME=${DB_USERNAME}
+                    export DB_PASSWORD=${DB_PASSWORD}
+                    export OPENAI_KEY=${OPENAI_KEY}
+
+                    docker compose down || true
+                    docker compose up -d --build
                 '''
             }
         }

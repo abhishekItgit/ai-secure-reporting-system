@@ -16,7 +16,7 @@ public class AiSqlServiceImpl implements AiSqlService {
     private final SqlSafetyValidator sqlSafetyValidator;
     private final IOpenAiClient openAiClient;
 
-    @Value("${ai.model:gpt-4o-mini}")
+    @Value("${openai.model:gpt-4o-mini}")
     private String model;
 
     public AiSqlServiceImpl(

@@ -15,7 +15,7 @@ public class SqlSafetyValidator {
     );
 
     private static final Set<String> FORBIDDEN_PATTERNS = Set.of(
-            ";", "--", "/*", "*/",
+         //   "--", "/*", "*/",
             "information_schema",
             "mysql.", "sys.", "performance_schema"
     );

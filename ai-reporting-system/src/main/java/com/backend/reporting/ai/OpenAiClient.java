@@ -67,7 +67,7 @@ public class OpenAiClient {
                     .getMessage()
                     .getContent();
 
-            // 🔒 Clean AI output (important)
+            //  Clean AI output (important)
             String cleanJson = extractJson(content);
 
             return objectMapper.readValue(cleanJson, ReportIntent.class);

@@ -3,6 +3,7 @@ package com.backend.reporting.ai.service.impl;
 
 
 import com.backend.reporting.ai.prompt.SqlPromptBuilder;
+import com.backend.reporting.ai.schema.SchemaProvider;
 import com.backend.reporting.ai.security.SqlSafetyValidator;
 import com.backend.reporting.ai.service.AiSqlService;
 import com.backend.reporting.ai.service.IOpenAiClient;
@@ -15,6 +16,7 @@ public class AiSqlServiceImpl implements AiSqlService {
     private final SqlPromptBuilder promptBuilder;
     private final SqlSafetyValidator sqlSafetyValidator;
     private final IOpenAiClient openAiClient;
+    private final SchemaProvider schemaProvider;
 
     @Value("${openai.model:gpt-4o-mini}")
     private String model;
@@ -22,21 +24,24 @@ public class AiSqlServiceImpl implements AiSqlService {
     public AiSqlServiceImpl(
             SqlPromptBuilder promptBuilder,
             SqlSafetyValidator sqlSafetyValidator,
-            IOpenAiClient openAiClient
+            IOpenAiClient openAiClient,
+            SchemaProvider schemaProvider
     ) {
         this.promptBuilder = promptBuilder;
         this.sqlSafetyValidator = sqlSafetyValidator;
         this.openAiClient = openAiClient;
+        this.schemaProvider = schemaProvider;
     }
 
     @Override
     public String generateSql(
-            String databaseSchema,
+         //   String schema,
             String userRequest,
             String conversationMemory
     ) {
+        String schema = schemaProvider.getSchema();
         String prompt = promptBuilder.buildPrompt(
-                databaseSchema,
+                schema,
                 userRequest,
                 conversationMemory
         );

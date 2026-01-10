@@ -28,7 +28,7 @@ public class AiSqlController {
     public ResponseEntity<AiSqlResponse> generateSql(@RequestBody AiSqlRequest request) {
         System.out.println(">>> AI SQL CONTROLLER HIT <<<");
         String sql = aiSqlService.generateSql(
-                request.getDatabaseSchema(),
+            //    request.getDatabaseSchema(),
                 request.getUserRequest(),
                 request.getConversationMemory());
 

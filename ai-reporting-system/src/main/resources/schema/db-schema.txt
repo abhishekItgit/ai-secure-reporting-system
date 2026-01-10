@@ -1,0 +1,37 @@
+DATABASE: ai_reporting
+
+TABLE customers (
+  customerid BIGINT PRIMARY KEY,
+  name VARCHAR,
+  email VARCHAR,
+  region VARCHAR,
+  created_at DATETIME
+)
+
+TABLE orders (
+  orderid BIGINT PRIMARY KEY,
+  order_amount DECIMAL(38,2),
+  order_status VARCHAR,
+  customer_id BIGINT FOREIGN KEY REFERENCES customers(customerid),
+  created_at DATETIME
+)
+
+TABLE payments (
+  id BIGINT PRIMARY KEY,
+  payment_mode VARCHAR,
+  payment_status VARCHAR,
+  order_id BIGINT UNIQUE FOREIGN KEY REFERENCES orders(orderid),
+  created_at DATETIME
+)
+
+TABLE users (
+  userid BIGINT PRIMARY KEY,
+  username VARCHAR UNIQUE,
+  password VARCHAR,
+  role ENUM('ADMIN','USER')
+)
+
+VIEW vw_revenue_by_region (
+  region,
+  total_revenue
+)

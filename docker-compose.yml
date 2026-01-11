@@ -1,6 +1,13 @@
 version: "3.8"
 
 services:
+  redis:
+    image: redis:7
+    container_name: redis-ai
+    restart: always
+    ports:
+      - "6379:6379"
+
   mysql:
     image: mysql:8.0
     container_name: mysql-ai
@@ -34,6 +41,10 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       OPENAI_API_KEY: ${OPENAI_KEY}
+
+      # Redis (ONLY ADDITION)
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
 
 volumes:
   mysql_data:

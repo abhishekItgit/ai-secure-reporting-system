@@ -43,7 +43,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_KEY}
 
       # Redis (ONLY ADDITION)
-      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_HOST: 172.31.1.234
       SPRING_REDIS_PORT: 6379
 
 volumes:

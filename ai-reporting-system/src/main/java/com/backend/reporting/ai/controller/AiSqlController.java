@@ -4,6 +4,7 @@ package com.backend.reporting.ai.controller;
 import com.backend.reporting.ai.dto.AiSqlRequest;
 import com.backend.reporting.ai.dto.AiSqlResponse;
 import com.backend.reporting.ai.service.AiSqlService;
+import com.backend.reporting.ai.service.impl.AiOrchestratorService;
 import com.backend.reporting.service.ReportExecutionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +15,17 @@ public class AiSqlController {
 
     private final AiSqlService aiSqlService;
     private final ReportExecutionService reportExecutionService;
+    private final AiOrchestratorService aiOrchestratorService;
+
 
     public AiSqlController(
             AiSqlService aiSqlService,
-            ReportExecutionService reportExecutionService
+            ReportExecutionService reportExecutionService,
+            AiOrchestratorService  aiOrchestratorService
     ) {
         this.aiSqlService = aiSqlService;
         this.reportExecutionService = reportExecutionService;
+        this.aiOrchestratorService = aiOrchestratorService;
     }
 
 
@@ -42,5 +47,11 @@ public class AiSqlController {
                 reportExecutionService.executeReadOnly(request.getSql())
         );
     }
-
+    @PostMapping("/generate")
+    public ResponseEntity<String> generateSql(
+            @RequestParam("question") String userQuestion
+    ) {
+        String sql = aiOrchestratorService.process(userQuestion);
+        return ResponseEntity.ok(sql);
+    }
 }

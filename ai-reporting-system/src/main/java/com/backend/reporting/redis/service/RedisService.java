@@ -20,6 +20,7 @@ public class RedisService {
             redisTemplate.opsForValue().set(key, value, ttl);
         } catch (Exception ignored) {
             System.out.println("error while saving in Redis"+ ignored.getMessage());
+            ignored.printStackTrace();
         }
     }
 

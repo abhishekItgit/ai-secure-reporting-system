@@ -36,15 +36,17 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       DB_URL: jdbc:mysql://mysql:3306/ai_reporting?useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      OPENAI_API_KEY: ${OPENAI_KEY}
 
-      # Redis (ONLY ADDITION)
-      SPRING_REDIS_HOST: 172.31.1.234
+      SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
+
+      SPRING_OPENAI_API_KEY: ${OPENAI_KEY}
 
 volumes:
   mysql_data:

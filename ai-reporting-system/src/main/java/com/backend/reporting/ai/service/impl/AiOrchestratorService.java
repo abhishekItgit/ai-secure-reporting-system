@@ -44,6 +44,7 @@ public class AiOrchestratorService {
 
         //Cache & return
         sqlCacheService.put(cacheKey, sql);
+        System.out.println("cache is done");
         return sql;
     }
 }

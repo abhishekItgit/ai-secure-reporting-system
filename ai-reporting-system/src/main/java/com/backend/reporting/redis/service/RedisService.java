@@ -18,7 +18,9 @@ public class RedisService {
     public void safeSet(String key, Object value, Duration ttl) {
         try {
             redisTemplate.opsForValue().set(key, value, ttl);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            System.out.println("error while saving in Redis");
+        }
     }
 
     public Optional<Object> safeGet(String key) {

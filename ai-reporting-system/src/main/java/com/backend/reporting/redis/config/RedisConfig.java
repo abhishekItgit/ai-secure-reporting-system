@@ -13,6 +13,9 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory connectionFactory) {
+        System.out.println(
+                "🔗 RedisConnectionFactory = " + connectionFactory
+        );
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);

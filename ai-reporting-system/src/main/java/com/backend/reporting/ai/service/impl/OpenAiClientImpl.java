@@ -50,7 +50,7 @@ public class OpenAiClientImpl implements IOpenAiClient {
 
         } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
 
-            // 🔴 Clear, production-grade error logging
+            // Clear, production-grade error logging
             System.err.println("❌ OpenAI API ERROR");
             System.err.println("Status: " + e.getStatusCode());
             System.err.println("Response: " + e.getResponseBodyAsString());

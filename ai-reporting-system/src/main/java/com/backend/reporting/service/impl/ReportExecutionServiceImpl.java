@@ -1,6 +1,7 @@
 package com.backend.reporting.service;
 
 import com.backend.reporting.ai.security.SqlSafetyValidator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ public class ReportExecutionServiceImpl implements ReportExecutionService {
     private final SqlSafetyValidator sqlSafetyValidator;
 
     public ReportExecutionServiceImpl(
-            JdbcTemplate jdbcTemplate,
+           @Qualifier("mysqlJdbcTemplate") JdbcTemplate jdbcTemplate,
             SqlSafetyValidator sqlSafetyValidator
     ) {
         this.jdbcTemplate = jdbcTemplate;

@@ -1,6 +1,7 @@
 package com.backend.reporting.ai.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +14,15 @@ public class PostgresDataSourceConfig {
 
 
     @Bean(name = "pgDataSource")
-    public DataSource pgDataSource() {
+    public DataSource pgDataSource(
+            @Value("${pg.datasource.url}") String url,
+            @Value("${pg.datasource.username}") String username,
+            @Value("${pg.datasource.password}") String password
+    ) {
         return DataSourceBuilder.create()
-                .url("jdbc:postgresql://3.110.191.142:5433/vectordb")
-                .username("vector_user")
-                .password("vector_user")
+                .url(url)
+                .username(username)
+                .password(password)
                 .driverClassName("org.postgresql.Driver")
                 .build();
     }
@@ -28,4 +33,3 @@ public class PostgresDataSourceConfig {
         return new JdbcTemplate(dataSource);
     }
 }
-

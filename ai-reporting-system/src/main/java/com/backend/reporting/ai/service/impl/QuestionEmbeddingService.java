@@ -16,7 +16,8 @@ public class QuestionEmbeddingService {
 
     public QuestionEmbeddingService(
             OpenAiEmbeddingClient embeddingClient,
-            HashUtil hashUtil,RedisService redisService
+            HashUtil hashUtil,
+            RedisService redisService
     ) {
         this.embeddingClient = embeddingClient;
         this.hashUtil = hashUtil;
@@ -26,13 +27,14 @@ public class QuestionEmbeddingService {
     public float[] embedQuestion(String question) {
         String key  = "embedding:v1:" + hashUtil.sha256(question);
 
-        /*Object cached = redisService.safeGet(key);
-        if(cached != null ){return (float[])cached;}*/
+        Object cached = redisService.safeGet(key).orElse(null);
+        if (cached instanceof float[] cachedEmbedding) {
+            return cachedEmbedding;
+        }
         float[] embedding = embeddingClient.embedding(question);
 
-        redisService.safeSet(key,embedding, Duration.ofHours(24));
-      return embedding;
-
+        redisService.safeSet(key, embedding, Duration.ofHours(24));
+        return embedding;
     }
 
-    }
+}

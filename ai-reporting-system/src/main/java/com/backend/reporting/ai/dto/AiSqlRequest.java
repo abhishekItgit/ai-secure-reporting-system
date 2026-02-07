@@ -1,9 +1,11 @@
 package com.backend.reporting.ai.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class AiSqlRequest {
 
+    @NotBlank
     private String userRequest;
-    private String databaseSchema;
     private String conversationMemory;
 
     public String getUserRequest() {
@@ -14,14 +16,6 @@ public class AiSqlRequest {
         this.userRequest = userRequest;
     }
 
-    public String getDatabaseSchema() {
-        return databaseSchema;
-    }
-
-    public void setDatabaseSchema(String databaseSchema) {
-        this.databaseSchema = databaseSchema;
-    }
-
     public String getConversationMemory() {
         return conversationMemory;
     }
@@ -30,4 +24,3 @@ public class AiSqlRequest {
         this.conversationMemory = conversationMemory;
     }
 }
-

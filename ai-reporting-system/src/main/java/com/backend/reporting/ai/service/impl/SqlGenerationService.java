@@ -7,6 +7,8 @@ import com.backend.reporting.redis.service.RedisService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+
 @Service
 public class SqlGenerationService {
 
@@ -27,14 +29,15 @@ public class SqlGenerationService {
     }
     public String generateSql(String prompt) {
         String key = "sql:v1:" + hashUtil.sha256(prompt);
-        Object cached = redisService.safeGet(key);
-
-    /*    if (cached != null) {
-            return (String) cached;
-        }*/
+        Object cached = redisService.safeGet(key).orElse(null);
+        if (cached instanceof String cachedSql) {
+            return cachedSql;
+        }
         String rawResponse = iOpenAiClient.complete(prompt,model);
         String sql = normalizeSql(rawResponse);
 
+        sqlSafetyValidator.validate(sql);
+        redisService.safeSet(key, sql, Duration.ofHours(2));
         return sql;
 
 

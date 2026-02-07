@@ -2,10 +2,11 @@ package com.backend.reporting.ai.dao;
 
 import com.backend.reporting.ai.dto.SchemaContextChunk;
 import com.backend.reporting.ai.dto.SchemaMetadata;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import tools.jackson.databind.ObjectMapper;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -16,13 +17,17 @@ import java.util.stream.IntStream;
 
 @Repository
 public class SchemaVectorRepository {
-    ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final JdbcTemplate jdbcTemplate;
+    private final String schemaName;
 
     public SchemaVectorRepository(
-            @Qualifier("pgJdbcTemplate") JdbcTemplate jdbcTemplate) {
+            @Qualifier("pgJdbcTemplate") JdbcTemplate jdbcTemplate,
+            @Value("${schema.metadata.name}") String schemaName
+    ) {
         this.jdbcTemplate = jdbcTemplate;
+        this.schemaName = schemaName;
     }
 
 
@@ -33,13 +38,18 @@ public class SchemaVectorRepository {
             float[] embedding
     ) {
         SchemaMetadata metadata = new SchemaMetadata(
-                "dmihfcdemo",
+                schemaName,
                 tableName,
                 "TABLE_SCHEMA",
                 "mysql",
                 1
         );
-        String metadataJson = objectMapper.writeValueAsString(metadata);
+        String metadataJson;
+        try {
+            metadataJson = objectMapper.writeValueAsString(metadata);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to serialize schema metadata", ex);
+        }
 
         String sql = """
     INSERT INTO db_context
@@ -73,63 +83,76 @@ public class SchemaVectorRepository {
 
     public List<SchemaContextChunk> findRelevantSchema(
             float[] embedding,
+            List<String> keywords,
             int limit
     ) {
 
+        String keywordClause = "";
+        if (keywords != null && !keywords.isEmpty()) {
+            String conditions = keywords.stream()
+                    .map(keyword -> "content ILIKE ?")
+                    .collect(Collectors.joining(" OR "));
+            keywordClause = " AND (" + conditions + ")";
+        }
+
         String sql = """
-         WITH base_tables AS (
-                     SELECT content, metadata, embedding
-                     FROM db_context
-                     WHERE type = 'TABLE_SCHEMA'
-                       AND (
-                             content ILIKE '%disbursal%'
-                          OR content ILIKE '%loanPurpose%'
-                          OR content ILIKE '%purposeID%'
-                       )
-                 ),
-                
-                 fk_names AS (
-                     SELECT DISTINCT
-                            (regexp_match(content, '->\\\\s*(\\\\w+)', 'i'))[1] AS fk_table
-                     FROM base_tables
-                     WHERE content ~* '->'
-                 ),
-                
-                 fk_tables AS (
-                     SELECT dc.content, dc.metadata, dc.embedding
-                     FROM db_context dc
-                     JOIN fk_names f
-                       ON dc.content ILIKE '%Table: ' || f.fk_table || '%'
-                 ),
-                
-                 all_tables AS (
-                     SELECT content, metadata, embedding FROM base_tables
-                     UNION ALL
-                     SELECT content, metadata, embedding FROM fk_tables
-                 )
-                
-                 SELECT content, metadata
-                 FROM (
-                     SELECT DISTINCT content, metadata, embedding
-                     FROM all_tables
-                 ) t
-                 ORDER BY embedding <-> CAST(? AS vector)
-                 LIMIT ?;
-                
-        """;
+                WITH base_tables AS (
+                    SELECT content, metadata, embedding
+                    FROM db_context
+                    WHERE type = 'TABLE_SCHEMA' %s
+                ),
+
+                fk_names AS (
+                    SELECT DISTINCT
+                           (regexp_match(content, '->\\\\s*(\\\\w+)', 'i'))[1] AS fk_table
+                    FROM base_tables
+                    WHERE content ~* '->'
+                ),
+
+                fk_tables AS (
+                    SELECT dc.content, dc.metadata, dc.embedding
+                    FROM db_context dc
+                    JOIN fk_names f
+                      ON dc.content ILIKE '%Table: ' || f.fk_table || '%'
+                ),
+
+                all_tables AS (
+                    SELECT content, metadata, embedding FROM base_tables
+                    UNION ALL
+                    SELECT content, metadata, embedding FROM fk_tables
+                )
+
+                SELECT content, metadata
+                FROM (
+                    SELECT DISTINCT content, metadata, embedding
+                    FROM all_tables
+                ) t
+                ORDER BY embedding <-> CAST(? AS vector)
+                LIMIT ?;
+                """.formatted(keywordClause);
 
         return jdbcTemplate.query(
                 sql,
                 ps -> {
-                    ps.setString(1, toPgVector(embedding));
-                    ps.setInt(2, limit);
+                    int index = 1;
+                    if (keywords != null) {
+                        for (String keyword : keywords) {
+                            ps.setString(index++, "%" + keyword + "%");
+                        }
+                    }
+                    ps.setString(index++, toPgVector(embedding));
+                    ps.setInt(index, limit);
                 },
                 (rs, rowNum) -> {
                     String content = rs.getString("content");
 
                     String metadataJson = rs.getString("metadata");
-                    Map<String, Object> metadata =
-                            objectMapper.readValue(metadataJson, Map.class);
+                    Map<String, Object> metadata;
+                    try {
+                        metadata = objectMapper.readValue(metadataJson, Map.class);
+                    } catch (Exception ex) {
+                        throw new IllegalStateException("Failed to parse schema metadata", ex);
+                    }
 
                     return new SchemaContextChunk(content, metadata);
                 }
@@ -138,4 +161,3 @@ public class SchemaVectorRepository {
 
 
 }
-

@@ -2,6 +2,8 @@ package com.backend.reporting.ai.service.impl;
 
 
 import com.backend.reporting.ai.service.IOpenAiClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -11,6 +13,7 @@ import java.util.Map;
 @Component
 public class OpenAiClientImpl implements IOpenAiClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(OpenAiClientImpl.class);
     private final WebClient webClient;
 
     public OpenAiClientImpl(OpenAiWebClient openAiWebClient) {
@@ -41,18 +44,14 @@ public class OpenAiClientImpl implements IOpenAiClient {
             return extractContent(response);
 
         } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
-
-            // Clear, production-grade error logging
-            System.err.println("OpenAI API ERROR");
-            System.err.println("Status: " + e.getStatusCode());
-            System.err.println("Response: " + e.getResponseBodyAsString());
+            logger.error("OpenAI API error status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
 
             throw new IllegalStateException(
                     "OpenAI API error: " + e.getStatusCode().value()
             );
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Unexpected OpenAI client error", e);
             throw new IllegalStateException("Unexpected OpenAI client error");
         }
     }

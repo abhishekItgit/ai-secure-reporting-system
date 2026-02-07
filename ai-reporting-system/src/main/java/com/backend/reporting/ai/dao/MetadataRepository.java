@@ -1,8 +1,6 @@
 package com.backend.reporting.ai.dao;
 
-import com.backend.reporting.ai.model.ColumnMetadata;
 import com.backend.reporting.ai.model.SchemaContext;
-import com.backend.reporting.ai.schema.MetadataSql;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,26 +21,6 @@ public class MetadataRepository {
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.schemaName = schemaName;
-    }
-
-    public List<ColumnMetadata> fetchColumnMetaData() {
-        return jdbcTemplate.query(
-                MetadataSql.FETCH_COLUMNS,
-                new Object[]{ schemaName },
-                (rs, rowNum) -> {
-                    ColumnMetadata columnMetadata = new ColumnMetadata();
-                    columnMetadata.setTableName(rs.getString("TABLE_NAME"));
-                    columnMetadata.setColumnName(rs.getString("COLUMN_NAME"));
-                    columnMetadata.setDataType(rs.getString("DATA_TYPE"));
-                    columnMetadata.setNullable(
-                            "YES".equalsIgnoreCase(rs.getString("IS_NULLABLE"))
-                    );
-                    columnMetadata.setPrimaryKey(
-                            "PRI".equalsIgnoreCase(rs.getString("COLUMN_KEY"))
-                    );
-                    return columnMetadata;
-                }
-        );
     }
 
     public Optional<String> fetchPurpose(String tableName) {
@@ -66,11 +44,11 @@ public class MetadataRepository {
     public List<SchemaContext> fetchSchemaContexts() {
 
         String sql = """
-            SELECT 
-                table_name,
-                purpose
-            FROM schema_table_purpose where table_name = 'tblLoanApplicationDisbursalDetail'
-            """;
+                SELECT
+                    table_name,
+                    purpose
+                FROM %s.schema_table_purpose
+                """.formatted(schemaName);
 
         return jdbcTemplate.query(
                 sql,
@@ -82,4 +60,3 @@ public class MetadataRepository {
         );
     }
 }
-

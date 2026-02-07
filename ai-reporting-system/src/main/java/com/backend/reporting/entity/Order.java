@@ -13,7 +13,6 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderID;
-
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;

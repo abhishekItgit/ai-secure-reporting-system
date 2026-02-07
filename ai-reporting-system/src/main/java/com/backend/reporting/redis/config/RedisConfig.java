@@ -14,7 +14,7 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory connectionFactory) {
         System.out.println(
-                "🔗 RedisConnectionFactory = " + connectionFactory
+                "RedisConnectionFactory = " + connectionFactory
         );
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();

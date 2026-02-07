@@ -1,6 +1,7 @@
-package com.backend.reporting.service;
+package com.backend.reporting.service.impl;
 
 import com.backend.reporting.ai.security.SqlSafetyValidator;
+import com.backend.reporting.service.ReportExecutionService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;

@@ -2,9 +2,6 @@ package com.backend.reporting.ai.service.impl;
 
 
 import com.backend.reporting.ai.service.IOpenAiClient;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -16,14 +13,8 @@ public class OpenAiClientImpl implements IOpenAiClient {
 
     private final WebClient webClient;
 
-    public OpenAiClientImpl(
-            @Value("${openai.api.key}") String apiKey
-    ) {
-        this.webClient = WebClient.builder()
-                .baseUrl("https://api.openai.com/v1/chat/completions")
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+    public OpenAiClientImpl(OpenAiWebClient openAiWebClient) {
+       this.webClient = openAiWebClient.client();
     }
 
     @Override
@@ -41,6 +32,7 @@ public class OpenAiClientImpl implements IOpenAiClient {
 
         try {
             Map response = webClient.post()
+                    .uri("/chat/completions")
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(Map.class)
@@ -51,7 +43,7 @@ public class OpenAiClientImpl implements IOpenAiClient {
         } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
 
             // Clear, production-grade error logging
-            System.err.println("❌ OpenAI API ERROR");
+            System.err.println("OpenAI API ERROR");
             System.err.println("Status: " + e.getStatusCode());
             System.err.println("Response: " + e.getResponseBodyAsString());
 

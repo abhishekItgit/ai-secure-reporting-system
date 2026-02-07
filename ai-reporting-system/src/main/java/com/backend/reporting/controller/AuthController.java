@@ -7,6 +7,7 @@ import com.backend.reporting.entity.Role;
 import com.backend.reporting.entity.User;
 import com.backend.reporting.exception.UnauthorizedException;
 import com.backend.reporting.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class AuthController {
         return "User registered successfully";
     }
     @PostMapping("/login")
-    public ApiResponse<String> login(@RequestBody LoginRequest request) {
+    public ApiResponse<String> login(@RequestBody @Valid LoginRequest request) {
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
@@ -42,7 +43,7 @@ public class AuthController {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
         return ApiResponse.success(token);
     }
 

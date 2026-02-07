@@ -4,6 +4,8 @@ package com.backend.reporting.ai.service.impl;
 
 import com.backend.reporting.ai.dao.SchemaVectorRepository;
 import com.backend.reporting.ai.model.SchemaContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Service
 public class SchemaVectorIngestionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SchemaVectorIngestionService.class);
     private final SchemaContextService schemaContextService;
     private final OpenAiEmbeddingClient embeddingClient;
     private final SchemaVectorRepository vectorRepository;
@@ -37,41 +40,46 @@ public class SchemaVectorIngestionService {
         List<SchemaContext> contexts =
                 schemaContextService.buildSchemaContexts(" ");
         for (SchemaContext context : contexts) {
-        try {
+            try {
 
-        //  Generate embedding
-        float[] embedding =
-                embeddingClient.embedding(context.getContent());
+                //  Generate embedding
+                float[] embedding =
+                        embeddingClient.embedding(context.getContent());
 
-        //  Deterministic UUID (per table)
-        UUID id = UUID.nameUUIDFromBytes(
-                context.getTableName()
-                        .getBytes(StandardCharsets.UTF_8)
-        );
+                //  Deterministic UUID (per table)
+                UUID id = UUID.nameUUIDFromBytes(
+                        context.getTableName()
+                                .getBytes(StandardCharsets.UTF_8)
+                );
 
-        //  Store in pgvector
-        vectorRepository.upsert(
-                id,
-                context.getTableName(),
-                context.getContent(),
-                embedding
-        );
-        Thread.sleep(6000);
+                //  Store in pgvector
+                vectorRepository.upsert(
+                        id,
+                        context.getTableName(),
+                        context.getContent(),
+                        embedding
+                );
+                Thread.sleep(6000);
 
-  } catch (WebClientResponseException.TooManyRequests e) {
-         handleRateLimit(e);
-} catch (Exception e) {
-   System.out.println("Failed chunk :"+ context.getTableName()+ e);
-}
+            } catch (WebClientResponseException.TooManyRequests e) {
+                handleRateLimit(e);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warn("Schema ingestion interrupted");
+                return;
+            } catch (Exception e) {
+                logger.warn("Failed chunk {}", context.getTableName(), e);
+            }
         }
 
     }
     private void handleRateLimit(WebClientResponseException.TooManyRequests e) {
         try {
-            System.out.println("Failed: " + e);
+            logger.warn("Rate limited by embedding API", e);
             Thread.sleep(5000);
         } catch (InterruptedException ignored) {
-            System.out.println("Failed: " + e);
+            Thread.currentThread().interrupt();
+            logger.warn("Rate limit backoff interrupted", e);
         }
 
 

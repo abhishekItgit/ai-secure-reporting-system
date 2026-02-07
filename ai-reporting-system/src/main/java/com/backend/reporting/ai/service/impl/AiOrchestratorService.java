@@ -1,14 +1,20 @@
 package com.backend.reporting.ai.service.impl;
 
 
-import com.backend.reporting.ai.cache.*;
+import com.backend.reporting.ai.cache.QueryNormalizer;
+import com.backend.reporting.ai.cache.SchemaHashProvider;
+import com.backend.reporting.ai.cache.SqlCacheKeyBuilder;
+import com.backend.reporting.ai.cache.SqlCacheService;
 import com.backend.reporting.ai.security.SqlSafetyValidator;
 import com.backend.reporting.ai.service.AiSqlService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AiOrchestratorService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AiOrchestratorService.class);
     private final SqlCacheService sqlCacheService;
     private final AiSqlService aiSqlService;
     private final SqlSafetyValidator sqlSafetyValidator;
@@ -44,7 +50,7 @@ public class AiOrchestratorService {
 
         //Cache & return
         sqlCacheService.put(cacheKey, sql);
-        System.out.println("cache is done");
+        logger.debug("Cached SQL for key {}", cacheKey);
         return sql;
     }
 }

@@ -15,7 +15,7 @@ public class SqlSafetyValidator {
     );
 
     private static final Set<String> FORBIDDEN_PATTERNS = Set.of(
-         //   "--", "/*", "*/",
+            "--", "/*", "*/", ";",
             "information_schema",
             "mysql.", "sys.", "performance_schema"
     );
@@ -26,6 +26,10 @@ public class SqlSafetyValidator {
         }
 
         String normalized = sql.toLowerCase(Locale.ROOT).trim();
+
+        if (normalized.contains("not_enough_information")) {
+            throw new SecurityException("Insufficient information to generate SQL");
+        }
 
         if (!normalized.startsWith("select")) {
             throw new SecurityException("Only SELECT queries are allowed");

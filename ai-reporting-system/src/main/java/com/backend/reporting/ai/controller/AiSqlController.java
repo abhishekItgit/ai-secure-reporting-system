@@ -3,12 +3,21 @@ package com.backend.reporting.ai.controller;
 
 import com.backend.reporting.ai.dto.AiSqlRequest;
 import com.backend.reporting.ai.dto.AiSqlResponse;
-import com.backend.reporting.ai.prompt.RagPromptBuilder;
 import com.backend.reporting.ai.service.AiSqlService;
-import com.backend.reporting.ai.service.impl.*;
+import com.backend.reporting.ai.service.impl.AiOrchestratorService;
+import com.backend.reporting.ai.service.impl.RagPromptService;
+import com.backend.reporting.ai.service.impl.SchemaVectorIngestionService;
+import com.backend.reporting.ai.service.impl.SqlGenerationService;
 import com.backend.reporting.service.ReportExecutionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -16,6 +25,7 @@ import java.util.Map;
 @RequestMapping("api/v1/reports/ai")
 public class AiSqlController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AiSqlController.class);
     private final AiSqlService aiSqlService;
     private final ReportExecutionService reportExecutionService;
     private final AiOrchestratorService aiOrchestratorService;
@@ -23,18 +33,13 @@ public class AiSqlController {
 
     private final RagPromptService ragPromptService;
     private final SqlGenerationService sqlGenerationService;
-    private final SchemaContextService schemaContextService;
-
-
-
     public AiSqlController(
             AiSqlService aiSqlService,
             ReportExecutionService reportExecutionService,
             AiOrchestratorService  aiOrchestratorService,
             RagPromptService ragPromptService,
             SqlGenerationService sqlGenerationServic,
-            SchemaVectorIngestionService schemaVectorIngestionService,
-            SchemaContextService schemaContextService
+            SchemaVectorIngestionService schemaVectorIngestionService
     ) {
         this.aiSqlService = aiSqlService;
         this.reportExecutionService = reportExecutionService;
@@ -42,13 +47,12 @@ public class AiSqlController {
         this.schemaVectorIngestionService = schemaVectorIngestionService;
         this.ragPromptService = ragPromptService;
         this.sqlGenerationService = sqlGenerationServic;
-        this.schemaContextService = schemaContextService;
     }
 
 
     @PostMapping("/sql")
-    public ResponseEntity<AiSqlResponse> generateSql(@RequestBody AiSqlRequest request) {
-        System.out.println(">>> AI SQL CONTROLLER HIT <<<");
+    public ResponseEntity<AiSqlResponse> generateSql(@RequestBody @Valid AiSqlRequest request) {
+        logger.info("AI SQL generation requested");
         String sql = aiSqlService.generateSql(
             //    request.getDatabaseSchema(),
                 request.getUserRequest(),

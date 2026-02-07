@@ -1,7 +1,6 @@
 package com.backend.reporting.exception;
 
 import com.backend.reporting.dto.ApiResponse;
-import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +12,23 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<ApiResponse<?>> handleBadRequest(BadRequestException ex) {
+    public ResponseEntity<ApiResponse<?>> handleBadRequest(DataAccessException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ApiResponse<?>> handleSecurity(SecurityException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
